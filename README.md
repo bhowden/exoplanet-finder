@@ -50,7 +50,7 @@ docker run -d --privileged -p 2222:2222 --name exoplanet-container exoplanet-ser
 
 5. Access the Exoplanet Service:
 
-The Exoplanet Service will be running in the background as a systemd service inside the Docker container. You can interact with it using SSH.
+The Exoplanet Server will be running inside the Docker container. You can interact with it using SSH.
 
 ```sh
 ssh -p 2222 -i exoplanet.pem root@localhost
@@ -78,8 +78,3 @@ docker rm exoplanet-container
 ## Customization
 
 You can modify the `exoplanet-server.c` source code and `Makefile` to customize the behavior of the Exoplanet Service.
-
-## Notes
-
-- Running systemd inside a Docker container is not the most common practice and may have limitations.
-- This project is for educational purposes and demonstrates a specific setup. It may not be suitable for production use.
