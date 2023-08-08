@@ -12,6 +12,9 @@ COPY exoplanet-server.c /app/
 COPY makefile /app/
 COPY exoplanet-service /etc/systemd/system/exoplanet-service
 
+# Copy exoplanet.pem to /opt
+COPY exoplanet.pem /opt/exoplanet.pem
+
 # Build the C program using the makefile
 RUN make
 
