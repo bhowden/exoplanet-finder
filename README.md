@@ -30,8 +30,8 @@ To use the Exoplanet Service, you'll need a PEM (Privacy Enhanced Mail) file for
 1. Clone the repository:
 
 ```sh
-git clone https://github.com/yourusername/exoplanet-server.git
-cd exoplanet-server
+git clone https://github.com/bhowden/exoplanet-finder.git
+cd exoplanet-finder
 ```
 
 2. Place the `exoplanet.pem` file you generated earlier in the same directory.
@@ -83,6 +83,3 @@ You can modify the `exoplanet-server.c` source code and `Makefile` to customize 
 
 - Running systemd inside a Docker container is not the most common practice and may have limitations.
 - This project is for educational purposes and demonstrates a specific setup. It may not be suitable for production use.
-```
-
-Replace `yourusername` with your actual GitHub username and make any necessary adjustments to the instructions to match your project's specifics.
