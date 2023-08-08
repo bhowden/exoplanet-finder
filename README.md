@@ -1,6 +1,6 @@
 # Exoplanet Server
 
-This project provides a simple C program that calculates the current distance to an exoplanet based on its orbital parameters. It includes a Dockerfile to create a Docker image that runs the program as a background service using systemd.
+This project provides a simple C program that calculates the current distance to an exoplanet based on its orbital parameters. It includes a Dockerfile to create a Docker image that runs the program.
 
 ## Requirements
 
