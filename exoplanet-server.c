@@ -1,4 +1,4 @@
-// make this require a pem file rigt like i need a private private keys
+// you gotta make a pem file first fellas
 
 #include <stdio.h>
 #include <stdlib.h>
