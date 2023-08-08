@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: exoplanet-service
+spec:
+  selector:
+    app: exoplanet-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 2222
+  type: LoadBalancer
