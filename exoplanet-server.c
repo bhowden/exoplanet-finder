@@ -1,10 +1,8 @@
-// you gotta make a pem file first fellas
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <libssh/libssh.h>
-#include <jansson.h> // Include Jansson library
+#include <jansson.h>
 
 // Define constants
 #define PI 3.14159265358979323846
