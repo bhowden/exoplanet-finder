@@ -59,6 +59,7 @@ ssh -p 2222 -i exoplanet.pem root@localhost
 6. Calculate Exoplanet Distance and Right Ascension:
 
 Once connected via SSH, you can send JSON data to the service to calculate the distance to an exoplanet and its Right Ascension (RA).
+property ```exoplanet.unix_time``` is optional and defaults to NOW if not provided.
 
 ```sh
 echo '{"mass": 5.0, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0}' | ssh -p 2222 -i exoplanet.pem root@localhost
