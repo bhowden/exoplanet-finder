@@ -96,7 +96,7 @@ The JSON object representing exoplanet data has the following properties:
 - `planet_radius` (number): The radius of the exoplanet in Jupiter radii.
 - `orbital_radius` (number): The orbital radius of the exoplanet in Astronomical Units (AU).
 - `orbital_period` (number): The orbital period of the exoplanet in years.
-- `eccentricity` (number): The eccentricity of the exoplanet's orbit.
+- `eccentricity` (number): The eccentricity of the exoplanet's orbit. The eccentricity value ranges between 0 (circular orbit) and 1 (parabolic orbit), with values in between indicating elliptical orbits.
 - `inclination` (number): The orbital inclination of the exoplanet in degrees.
 - `longitude_of_node` (number): The longitude of the ascending node of the exoplanet's orbit in degrees.
 - `argument_of_periapsis` (number): The argument of periapsis of the exoplanet's orbit in degrees.
