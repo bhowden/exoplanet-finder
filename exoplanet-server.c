@@ -69,86 +69,96 @@ double calculateRa(const struct Exoplanet *planet, double current_time) {
 
 int process_request(ssh_session session)
 {
-	char buffer[256];
-	ssh_channel channel;
-	int nbytes;
+    char buffer[256];
+    ssh_channel channel;
+    int nbytes;
 
-	channel = ssh_channel_new(session);
-	if (channel == NULL)
-		return SSH_ERROR;
+    channel = ssh_channel_new(session);
+    if (channel == NULL)
+        return SSH_ERROR;
 
-	if (ssh_channel_open_session(channel) != SSH_OK)
-	{
-		ssh_channel_free(channel);
-		return SSH_ERROR;
-	}
+    if (ssh_channel_open_session(channel) != SSH_OK)
+    {
+        ssh_channel_free(channel);
+        return SSH_ERROR;
+    }
 
-	ssh_channel_request_exec(channel, "echo -n D:");
+    ssh_channel_request_exec(channel, "echo -n D:");
 
-	// Define the exoplanet data
-	struct Exoplanet exoplanet = { .name = "Gas Giant",
-		.mass = 8.053,
-		.planet_radius = 1.12,
-		.orbital_radius = 2.774,
-		.orbital_period = 4.8,
-		.eccentricity = 0.37,
-	};
+    // Define the exoplanet data
+    struct Exoplanet exoplanet = { .name = "Gas Giant",
+        .mass = 8.053,
+        .planet_radius = 1.12,
+        .orbital_radius = 2.774,
+        .orbital_period = 4.8,
+        .eccentricity = 0.37,
+    };
 
-	// Receive JSON input from client
-	nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
-	buffer[nbytes] = '\0';
+    // Receive JSON input from client
+    nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);
+    buffer[nbytes] = '\0';
 
-	// Parse JSON input using Jansson
-	json_t * root;
-	json_error_t error;
-	root = json_loads(buffer, 0, &error);
+    // Parse JSON input using Jansson
+    json_t * root;
+    json_error_t error;
+    root = json_loads(buffer, 0, &error);
 
-	if (root)
-	{
-		// Update exoplanet properties from JSON
-		json_t *mass_json = json_object_get(root, "mass");
-		if (json_is_number(mass_json))
-			exoplanet.mass = json_number_value(mass_json);
+    if (root)
+    {
+        // Update exoplanet properties from JSON
+        json_t *mass_json = json_object_get(root, "mass");
+        if (json_is_number(mass_json))
+            exoplanet.mass = json_number_value(mass_json);
 
-		json_t *orbital_radius_json = json_object_get(root, "orbital_radius");
-		if (json_is_number(orbital_radius_json))
-			exoplanet.orbital_radius = json_number_value(orbital_radius_json);
+        json_t *orbital_radius_json = json_object_get(root, "orbital_radius");
+        if (json_is_number(orbital_radius_json))
+            exoplanet.orbital_radius = json_number_value(orbital_radius_json);
 
-		json_t *orbital_period_json = json_object_get(root, "orbital_period");
-		if (json_is_number(orbital_period_json))
-			exoplanet.orbital_period = json_number_value(orbital_period_json);
+        json_t *orbital_period_json = json_object_get(root, "orbital_period");
+        if (json_is_number(orbital_period_json))
+            exoplanet.orbital_period = json_number_value(orbital_period_json);
 
-		json_t *eccentricity_json = json_object_get(root, "eccentricity");
-		if (json_is_number(eccentricity_json))
-			exoplanet.eccentricity = json_number_value(eccentricity_json);
+        json_t *eccentricity_json = json_object_get(root, "eccentricity");
+        if (json_is_number(eccentricity_json))
+            exoplanet.eccentricity = json_number_value(eccentricity_json);
 
-		// ... (Parse other properties if needed)
-		json_decref(root);
-	}
-	else
-	{
-		fprintf(stderr, "Error parsing JSON: %s\n", error.text);
-	}
+        // ... (Parse other properties if needed)
+        json_decref(root);
+    }
+    else
+    {
+        fprintf(stderr, "Error parsing JSON: %s\n", error.text);
+    }
 
-	// Get the current system time
-	time_t raw_time;
-	time(&raw_time);
+    // Get the current system time
+    time_t raw_time;
+    time(&raw_time);
 
-	// Convert system time to a double (in seconds)
-	double current_time = (double) raw_time;
+    // Convert system time to a double (in seconds)
+    double current_time = (double) raw_time;
 
-	// Calculate the distance to the exoplanet
-	double distance = calculateDistance(&exoplanet, current_time);
+    // Calculate the distance to the exoplanet
+    double distance = calculateDistance(&exoplanet, current_time);
 
-	// Format the response
-	snprintf(buffer, sizeof(buffer), "%.4f", distance);
+    // Calculate the Right Ascension (RA)
+    double ra = calculateRa(&exoplanet, current_time);
 
-	// Send the response
-	ssh_channel_write(channel, buffer, strlen(buffer));
-	ssh_channel_send_eof(channel);
-	ssh_channel_close(channel);
-	ssh_channel_free(channel);
-	return SSH_OK;
+    // Create a JSON object with distance and RA
+    json_t *response = json_object();
+    json_object_set_new(response, "distance", json_real(distance));
+    json_object_set_new(response, "ra", json_real(ra));
+
+    // Serialize the JSON object to a string
+    char *response_str = json_dumps(response, JSON_COMPACT);
+    json_decref(response);
+
+    // Send the response
+    ssh_channel_write(channel, response_str, strlen(response_str));
+    ssh_channel_send_eof(channel);
+    ssh_channel_close(channel);
+    ssh_channel_free(channel);
+    free(response_str); // Free the allocated string
+    return SSH_OK;
 }
 
 int main()
