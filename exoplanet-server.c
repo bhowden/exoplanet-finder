@@ -1,3 +1,15 @@
+/*
+This C code defines a program that acts as an Exoplanet Server, calculating various parameters related to 
+exoplanets based on their orbital properties. The program includes functionality to calculate the distance 
+to an exoplanet using Kepler's equations, as well as the Right Ascension (RA) of the exoplanet. 
+The program is designed to be accessed via SSH and responds to incoming JSON data with calculated 
+distance and RA values in a JSON object. The code also utilizes the libssh library for SSH communication
+and the jansson library for JSON handling. It defines a struct Exoplanet to hold exoplanet data and
+includes functions to perform calculations based on this data. The program listens for incoming SSH
+connections, processes requests, and sends back the calculated results. The Dockerfile provided 
+allows easy deployment of the Exoplanet Server as a Docker container.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
