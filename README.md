@@ -27,28 +27,28 @@ To use the Exoplanet Service, you'll need a PEM (Privacy Enhanced Mail) file for
 
 ## Getting Started
 
-1. Clone the repository:
+## 1. Clone the repository:
 
 ```sh
 git clone https://github.com/bhowden/exoplanet-finder.git
 cd exoplanet-finder
 ```
 
-2. Place the `exoplanet.pem` file you generated earlier in the same directory.
+## 2. Place the `exoplanet.pem` file you generated earlier in the same directory.
 
-3. Build the Docker image:
+## 3. Build the Docker image:
 
 ```sh
 docker build -t exoplanet-finder .
 ```
 
-4. Run the Docker container:
+## 4. Run the Docker container:
 
 ```sh
 docker run -d --privileged -p 2222:2222 --name exoplanet-container exoplanet-finder
 ```
 
-5. Access the Exoplanet Service:
+## 5. Access the Exoplanet Service:
 
 The Exoplanet Server will be running inside the Docker container. You can interact with it using SSH.
 
@@ -56,18 +56,21 @@ The Exoplanet Server will be running inside the Docker container. You can intera
 ssh -p 2222 -i exoplanet.pem root@localhost
 ```
 
-6. Calculate Exoplanet Distance and Right Ascension:
+## 6. Calculate Exoplanet Distance and Right Ascension
 
-Once connected via SSH, you can send JSON data to the service to calculate the distance to an exoplanet and its Right Ascension (RA).
-property ```exoplanet.unix_time``` is optional and defaults to NOW if not provided.
+Once connected via SSH, you can send a JSON object to the service to calculate the distance to an exoplanet and its Right Ascension (RA). The `exoplanet.unix_time` property is optional and defaults to the current time if not provided.
+
+To calculate the distance and RA, use the following command, replacing the JSON data with your desired values:
 
 ```sh
-echo '{"mass": 5.0, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0}' | ssh -p 2222 -i exoplanet.pem root@localhost
+echo '{"name": "Exoplanet Name", "mass": 5.0, "planet_radius": 1.2, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0, "unix_time": 1691592726}' | ssh -p 2222 -i exoplanet.pem root@localhost
 ```
+
+Replace the values in the JSON object with your exoplanet's data. The `unix_time` property is optional. If provided, it specifies the Unix time in seconds for which the calculations are performed. If not provided, the calculations will be based on the current time.
 
 The service will respond with the calculated distance to the exoplanet and its Right Ascension (RA) in radians.
 
-7. Clean Up:
+## 7. Clean Up:
 
 To stop and remove the Docker container, run:
 
