@@ -10,14 +10,16 @@
 #define PI 3.14159265358979323846
 
 // Define the structure for exoplanet data
-struct Exoplanet
-{
-	const char *name;
-	double mass;	// in Jupiters
-	double planet_radius;	// in Jupiter radii
-	double orbital_radius;	// in AU
-	double orbital_period;	// in years
-	double eccentricity;
+struct Exoplanet {
+    const char *name;
+    double mass;             // in Jupiters
+    double planet_radius;    // in Jupiter radii
+    double orbital_radius;   // in AU
+    double orbital_period;   // in years
+    double eccentricity;
+    double inclination;      // Orbital inclination in degrees
+    double longitude_of_node; // Longitude of the ascending node in degrees
+    double argument_of_periapsis; // Argument of periapsis in degrees
 };
 
 // Function to calculate the current distance to an exoplanet
@@ -36,6 +38,33 @@ double calculateDistance(const struct Exoplanet *planet, double current_time)
 	double distance = planet->orbital_radius *(1 - planet->eccentricity* cos(eccentric_anomaly));
 
 	return distance;
+}
+
+// Function to calculate the Right Ascension (RA) of an exoplanet
+double calculateRa(const struct Exoplanet *planet, double current_time) {
+    // Convert orbital period to seconds
+    double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
+
+    // Calculate mean anomaly using Kepler's equation
+    double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
+
+    // Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
+    double eccentric_anomaly = mean_anomaly;
+
+    // Calculate true anomaly using eccentric anomaly and eccentricity
+    double true_anomaly = eccentric_anomaly;
+
+    // Calculate distance using Kepler's Third Law (AU)
+    double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
+
+    // Calculate x, y Cartesian coordinates
+    double x = distance * cos(true_anomaly);
+    double y = distance * sin(true_anomaly);
+
+    // Calculate Right Ascension (RA)
+    double ra = atan2(y, x);
+
+    return ra;
 }
 
 int process_request(ssh_session session)
