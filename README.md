@@ -1,6 +1,6 @@
 # Exoplanet Server
 
-This project provides a simple C program that calculates the current distance to an exoplanet based on its orbital parameters. It includes a Dockerfile to create a Docker image that runs the program.
+This project provides a simple C program that calculates the current distance to an exoplanet based on its orbital parameters, including Right Ascension (RA). It includes a Dockerfile to create a Docker image that runs the program.
 
 ## Requirements
 
@@ -56,15 +56,15 @@ The Exoplanet Server will be running inside the Docker container. You can intera
 ssh -p 2222 -i exoplanet.pem root@localhost
 ```
 
-6. Calculate Exoplanet Distance:
+6. Calculate Exoplanet Distance and Right Ascension:
 
-Once connected via SSH, you can send JSON data to the service to calculate the distance to an exoplanet.
+Once connected via SSH, you can send JSON data to the service to calculate the distance to an exoplanet and its Right Ascension (RA).
 
 ```sh
-echo '{"mass": 5.0, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2}' | ssh -p 2222 -i exoplanet.pem root@localhost
+echo '{"mass": 5.0, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0}' | ssh -p 2222 -i exoplanet.pem root@localhost
 ```
 
-The service will respond with the calculated distance to the exoplanet.
+The service will respond with the calculated distance to the exoplanet and its Right Ascension (RA) in radians.
 
 7. Clean Up:
 
