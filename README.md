@@ -79,3 +79,54 @@ docker rm exoplanet-container
 ## Customization
 
 You can modify the `exoplanet-finder.c` source code and `Makefile` to customize the behavior of the Exoplanet Service.
+
+# Exoplanet Data JSON Format
+
+This README section provides information on the JSON representation of exoplanet data, equivalent to the C struct `struct Exoplanet`. It also outlines the units used for each property in the JSON object.
+
+## JSON Object Structure
+
+The JSON object representing exoplanet data has the following properties:
+
+- `name` (string): The name of the exoplanet.
+- `mass` (number): The mass of the exoplanet in Jupiters.
+- `planet_radius` (number): The radius of the exoplanet in Jupiter radii.
+- `orbital_radius` (number): The orbital radius of the exoplanet in Astronomical Units (AU).
+- `orbital_period` (number): The orbital period of the exoplanet in years.
+- `eccentricity` (number): The eccentricity of the exoplanet's orbit.
+- `inclination` (number): The orbital inclination of the exoplanet in degrees.
+- `longitude_of_node` (number): The longitude of the ascending node of the exoplanet's orbit in degrees.
+- `argument_of_periapsis` (number): The argument of periapsis of the exoplanet's orbit in degrees.
+- `unix_time` (number, optional): The Unix time in seconds (optional). If provided, it specifies the time for which calculations are performed.
+
+## Units
+
+The units used for each property in the JSON object are as follows:
+
+- `mass`: Jupiters (Jupiter mass)
+- `planet_radius`: Jupiter radii
+- `orbital_radius`: Astronomical Units (AU)
+- `orbital_period`: Years
+- `eccentricity`: Unitless (ratio)
+- `inclination`: Degrees
+- `longitude_of_node`: Degrees
+- `argument_of_periapsis`: Degrees
+- `unix_time`: Seconds (Unix timestamp)
+
+## Example JSON Object
+
+Here is an example of how the exoplanet data can be represented in JSON:
+
+```json
+{
+    "name": "Super Earth",
+    "mass": 9.1,
+    "planet_radius": 2.1,
+    "orbital_radius": 0.812,
+    "orbital_period": 289.9,
+    "eccentricity": 0.72,
+    "inclination": 10.5,
+    "longitude_of_node": 45.0,
+    "argument_of_periapsis": 120.0,
+    "unix_time": 1691592726
+}
