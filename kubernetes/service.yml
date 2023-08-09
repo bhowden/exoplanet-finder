@@ -7,6 +7,6 @@ spec:
     app: exoplanet-server
   ports:
     - protocol: TCP
-      port: 80
+      port: 2222
       targetPort: 2222
   type: LoadBalancer

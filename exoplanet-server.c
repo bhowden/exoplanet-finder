@@ -47,8 +47,8 @@ double calculateDistance(const struct Exoplanet *planet, double current_time)
     // Calculate distance using Kepler's Third Law (AU)
     double distance_au = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
-    // Convert distance from AU to light years (1 AU = 63241.1 light years)
-    double distance_light_years = distance_au * 63241.1;
+    // Convert distance from AU to light years (1 AU = 0.0000158125074 light years)
+    double distance_light_years = distance_au * 0.0000158125074;
 
     return distance_light_years;
 }
