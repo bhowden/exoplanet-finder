@@ -6,8 +6,7 @@ The program is designed to be accessed via SSH and responds to incoming JSON dat
 distance and RA values in a JSON object. The code also utilizes the libssh library for SSH communication
 and the jansson library for JSON handling. It defines a struct Exoplanet to hold exoplanet data and
 includes functions to perform calculations based on this data. The program listens for incoming SSH
-connections, processes requests, and sends back the calculated results. The Dockerfile provided 
-allows easy deployment of the Exoplanet Server as a Docker container.
+connections, processes requests, and sends back the calculated results.
 */
 
 #include <stdio.h>
@@ -24,14 +23,14 @@ allows easy deployment of the Exoplanet Server as a Docker container.
 // Define the structure for exoplanet data
 struct Exoplanet {
     const char *name;
-    double mass;             // in Jupiters
-    double planet_radius;    // in Jupiter radii
-    double orbital_radius;   // in AU
-    double orbital_period;   // in years
+    double mass;                   // in Jupiters
+    double planet_radius;          // in Jupiter radii
+    double orbital_radius;         // in AU
+    double orbital_period;         // in years
     double eccentricity;
-    double inclination;      // Orbital inclination in degrees
-    double longitude_of_node; // Longitude of the ascending node in degrees
-    double argument_of_periapsis; // Argument of periapsis in degrees
+    double inclination;            // Orbital inclination in degrees
+    double longitude_of_node;      // Longitude of the ascending node in degrees
+    double argument_of_periapsis;  // Argument of periapsis in degrees
 };
 
 // Function to calculate the current distance to an exoplanet
