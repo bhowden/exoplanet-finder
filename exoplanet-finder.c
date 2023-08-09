@@ -54,7 +54,7 @@ double calculateDistance(const struct Exoplanet *planet, double current_time)
     return distance_light_years;
 }
 
-// Function to calculate the Right Ascension (RA) of an exoplanet
+// Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
 double calculateRa(const struct Exoplanet *planet, double current_time) {
     // Convert orbital period to seconds
     double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
@@ -62,21 +62,32 @@ double calculateRa(const struct Exoplanet *planet, double current_time) {
     // Calculate mean anomaly using Kepler's equation
     double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
 
-    // Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
+    // Calculate eccentric anomaly using mean anomaly
     double eccentric_anomaly = mean_anomaly;
 
-    // Calculate true anomaly using eccentric anomaly and eccentricity
-    double true_anomaly = eccentric_anomaly;
-
-    // Calculate distance using Kepler's Third Law (AU)
+    // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
-    // Calculate x, y Cartesian coordinates
-    double x = distance * cos(true_anomaly);
-    double y = distance * sin(true_anomaly);
+    // Calculate the true anomaly
+    double true_anomaly = 2 * atan(sqrt((1 + planet->eccentricity) / (1 - planet->eccentricity)) * tan(eccentric_anomaly / 2));
 
-    // Calculate Right Ascension (RA)
-    double ra = atan2(y, x);
+    // Calculate Cartesian coordinates in the orbital plane
+    double x_orbital = distance * (cos(true_anomaly) - planet->eccentricity);
+    double y_orbital = distance * sqrt(1 - planet->eccentricity * planet->eccentricity) * sin(true_anomaly);
+
+    // Convert orbital inclination, longitude of the ascending node, and argument of periapsis to radians
+    double inclination_rad = planet->inclination * (PI / 180.0);
+    double node_rad = planet->longitude_of_node * (PI / 180.0);
+    double periapsis_rad = planet->argument_of_periapsis * (PI / 180.0);
+
+    // Calculate the x, y, z coordinates in the equatorial plane
+    double x_eq = x_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad))
+                 - y_orbital * (sin(node_rad) * cos(periapsis_rad) + cos(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
+    double y_eq = x_orbital * (cos(node_rad) * sin(periapsis_rad) + sin(node_rad) * cos(periapsis_rad) * cos(inclination_rad))
+                 + y_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
+
+    // Calculate the right ascension (RA)
+    double ra = atan2(y_eq, x_eq);
 
     return ra;
 }
