@@ -4,7 +4,7 @@ metadata:
   name: exoplanet-service
 spec:
   selector:
-    app: exoplanet-server
+    app: exoplanet-finder
   ports:
     - protocol: TCP
       port: 2222

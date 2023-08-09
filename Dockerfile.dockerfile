@@ -8,7 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y gcc libssh-dev libjansson-dev
 
 # Copy the source code and makefile into the container
-COPY exoplanet-server.c /app/
+COPY exoplanet-findeeer.c /app/
 COPY makefile /app/
 
 # Copy exoplanet.pem to /opt
@@ -20,5 +20,5 @@ RUN make
 # Expose the SSH port
 EXPOSE 2222
 
-# Run the exoplanet-server program directly
-CMD ["/app/exoplanet-server"]
+# Run the exoplanet-finder program directly
+CMD ["/app/exoplanet-finder"]

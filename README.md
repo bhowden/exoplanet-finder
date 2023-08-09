@@ -39,13 +39,13 @@ cd exoplanet-finder
 3. Build the Docker image:
 
 ```sh
-docker build -t exoplanet-server .
+docker build -t exoplanet-finder .
 ```
 
 4. Run the Docker container:
 
 ```sh
-docker run -d --privileged -p 2222:2222 --name exoplanet-container exoplanet-server
+docker run -d --privileged -p 2222:2222 --name exoplanet-container exoplanet-finder
 ```
 
 5. Access the Exoplanet Service:
@@ -78,4 +78,4 @@ docker rm exoplanet-container
 
 ## Customization
 
-You can modify the `exoplanet-server.c` source code and `Makefile` to customize the behavior of the Exoplanet Service.
+You can modify the `exoplanet-finder.c` source code and `Makefile` to customize the behavior of the Exoplanet Service.

@@ -6,14 +6,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: exoplanet-server
+      app: exoplanet-finder
   template:
     metadata:
       labels:
-        app: exoplanet-server
+        app: exoplanet-finder
     spec:
       containers:
-        - name: exoplanet-server
-          image: exoplanet-server:latest
+        - name: exoplanet-finder
+          image: exoplanet-finder:latest
           ports:
             - containerPort: 2222
