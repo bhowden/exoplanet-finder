@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> // Include this header for time functions
+#include <math.h> // Include this header for mathematical functions
 #include <libssh/libssh.h>
 #include <jansson.h>
+
+// Define constants
+#define PI 3.14159265358979323846
+
 
 // Define constants
 #define PI 3.14159265358979323846
@@ -19,14 +25,17 @@ struct Exoplanet {
 
 // Function to calculate the current distance to an exoplanet
 double calculateDistance(const struct Exoplanet *planet, double current_time) {
-    // Convert orbital period to days
-    double orbital_period_days = planet->orbital_period * 365.25;
+    // Convert orbital period to seconds
+    double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
 
-    // Calculate mean anomaly (assumes circular orbit)
-    double mean_anomaly = (360.0 / orbital_period_days) * current_time;
+    // Calculate mean anomaly using Kepler's equation
+    double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
+
+    // Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
+    double eccentric_anomaly = mean_anomaly;
 
     // Calculate distance using Kepler's Third Law (AU)
-    double distance = pow(planet->orbital_radius, 1.5);
+    double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
     return distance;
 }
@@ -90,8 +99,15 @@ int process_request(ssh_session session) {
         fprintf(stderr, "Error parsing JSON: %s\n", error.text);
     }
 
+    // Get the current system time
+    time_t raw_time;
+    time(&raw_time);
+
+    // Convert system time to a double (in seconds)
+    double current_time = (double)raw_time;
+
     // Calculate the distance to the exoplanet
-    double distance = calculateDistance(&exoplanet, 3.0); // Example current time
+    double distance = calculateDistance(&exoplanet, current_time);
 
     // Format the response
     snprintf(buffer, sizeof(buffer), "%.4f", distance);
