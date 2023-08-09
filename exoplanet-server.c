@@ -20,7 +20,6 @@ connections, processes requests, and sends back the calculated results.
 // Define constants
 #define PI 3.14159265358979323846
 
-// Define the structure for exoplanet data
 struct Exoplanet {
     const char *name;
     double mass;                   // in Jupiters
@@ -31,7 +30,9 @@ struct Exoplanet {
     double inclination;            // Orbital inclination in degrees
     double longitude_of_node;      // Longitude of the ascending node in degrees
     double argument_of_periapsis;  // Argument of periapsis in degrees
+    double unix_time;              // Optional Unix time in seconds
 };
+
 
 double calculateDistance(const struct Exoplanet *planet, double current_time)
 {
@@ -143,12 +144,18 @@ int process_request(ssh_session session)
         fprintf(stderr, "Error parsing JSON: %s\n", error.text);
     }
 
-    // Get the current system time
-    time_t raw_time;
-    time(&raw_time);
-
     // Convert system time to a double (in seconds)
-    double current_time = (double) raw_time;
+    double current_time;
+
+    // Check if unix_time is provided and not null
+    if (exoplanet.unix_time > 0) {
+        current_time = exoplanet.unix_time;
+    } else {
+        // Get the current system time
+        time_t raw_time;
+        time(&raw_time);
+        current_time = (double) raw_time;
+    }
 
     // Calculate the distance to the exoplanet
     double distance = calculateDistance(&exoplanet, current_time);
