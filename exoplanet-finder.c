@@ -86,7 +86,7 @@ double calculateRa(const struct Exoplanet *planet, double current_time) {
     double y_eq = x_orbital * (cos(node_rad) * sin(periapsis_rad) + sin(node_rad) * cos(periapsis_rad) * cos(inclination_rad))
                  + y_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
 
-    // Calculate the right ascension (RA)
+    // After obtaining the x and y equatorial coordinates, proceed to calculate the right ascension (RA) using the atan2 function
     double ra = atan2(y_eq, x_eq);
 
     return ra;
