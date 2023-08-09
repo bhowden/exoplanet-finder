@@ -33,22 +33,24 @@ struct Exoplanet {
     double argument_of_periapsis;  // Argument of periapsis in degrees
 };
 
-// Function to calculate the current distance to an exoplanet
 double calculateDistance(const struct Exoplanet *planet, double current_time)
 {
-	// Convert orbital period to seconds
-	double orbital_period_seconds = planet->orbital_period *365.25 * 24 *60 * 60;
+    // Convert orbital period to seconds
+    double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
 
-	// Calculate mean anomaly using Kepler's equation
-	double mean_anomaly = 2 *PI *(current_time / orbital_period_seconds);
+    // Calculate mean anomaly using Kepler's equation
+    double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
 
-	// Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
-	double eccentric_anomaly = mean_anomaly;
+    // Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
+    double eccentric_anomaly = mean_anomaly;
 
-	// Calculate distance using Kepler's Third Law (AU)
-	double distance = planet->orbital_radius *(1 - planet->eccentricity* cos(eccentric_anomaly));
+    // Calculate distance using Kepler's Third Law (AU)
+    double distance_au = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
-	return distance;
+    // Convert distance from AU to light years (1 AU = 63241.1 light years)
+    double distance_light_years = distance_au * 63241.1;
+
+    return distance_light_years;
 }
 
 // Function to calculate the Right Ascension (RA) of an exoplanet
