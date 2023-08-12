@@ -38,20 +38,20 @@ struct Exoplanet {
 
 
 // Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
-void calculateRaAndDistance(const struct Exoplanet *planet, double current_time) {
+void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
     // Convert orbital period to seconds
     double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
 
-    // Calculate mean anomaly using Kepler's equation
+    // Calculate mean anomaly using Kepler's equation Function
     double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
 
     // Calculate eccentric anomaly using mean anomaly
-    double eccentric_anomaly = mean_anomaly;
+    double eccentric_anomaly = solveKeplersEquation(mean_anomaly, planet->eccentricity);
 
-    // Calculate distance from the focus (center of mass) to the exoplanet
+   // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
-    double distance_light_years =  * 0.0000158125074;
+    double distance_light_years = distance * 0.0000158125074;
 
     planet->distance = distance_light_years;
 
@@ -76,8 +76,36 @@ void calculateRaAndDistance(const struct Exoplanet *planet, double current_time)
     // After obtaining the x and y equatorial coordinates, proceed to calculate the right ascension (RA) using the atan2 function
     double ra = atan2(y_eq, x_eq);
 
+    if (ra < 0) ra += 2 * PI;
+
     planet->ra = ra;
 
+}
+
+// Function to solve Kepler's equation for the eccentric anomaly (E) given mean anomaly (M) and eccentricity (e)
+// This uses the Newton-Raphson method.
+double solveKeplersEquation(double M, double e) {
+    // Initial guess for eccentric anomaly is the mean anomaly
+    double E = M;
+    double delta = 0.000001;  // desired accuracy
+
+    for (int i = 0; i < 100; i++) {  // max 100 iterations for convergence
+        double f = E - e * sin(E) - M;
+        double f_prime = 1 - e * cos(E);
+        
+        // Newton's method update
+        double E_new = E - f / f_prime;
+
+        // Check for convergence
+        if (fabs(E_new - E) < delta) {
+            return E_new;
+        }
+        
+        E = E_new;
+    }
+
+    // If we're here, the method didn't converge; this is a fallback.
+    return E;
 }
 
 int process_request(ssh_session session) {
@@ -179,7 +207,7 @@ int process_request(ssh_session session) {
     }
 
     // Calculate the distance to the exoplanet & the Right Ascension (RA)
-    double ra = calculateRaAndDistance(&exoplanet, current_time);
+    calculateRaAndDistance(&exoplanet, current_time);
 
     // Create a JSON object with distance and RA
     json_t *response = json_object();
