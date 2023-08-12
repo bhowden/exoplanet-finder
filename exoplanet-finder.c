@@ -60,6 +60,7 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     // Calculate eccentric anomaly using mean anomaly
     double eccentric_anomaly = solveKeplersEquation(mean_anomaly, planet->eccentricity);
 
+    // keplar equation solver function didnt come to a value exit early
     if (isnan(eccentric_anomaly))
     {
         planet->distance = NAN;
@@ -93,6 +94,7 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     // After obtaining the x and y equatorial coordinates, proceed to calculate the right ascension (RA) using the atan2 function
     double ra = atan2(y_eq, x_eq);
 
+    // ensures that the Right Ascension (RA) is always in the positive range
     if (ra < 0)
         ra += 2 * PI;
 
@@ -150,10 +152,6 @@ int process_request(ssh_session session)
         // Return an error as the session couldn't be opened.
         return SSH_ERROR;
     }
-
-    // Send a command to execute on the remote server via the SSH channel.
-    // Here, the command is to echo the string "D:" without appending a newline.
-    ssh_channel_request_exec(channel, "echo -n D:");
 
     // Define the exoplanet data
     struct Exoplanet exoplanet = {
