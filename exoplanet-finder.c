@@ -22,6 +22,8 @@ connections, processes requests, and sends back the calculated results.
 // Define constants
 #define PI 3.14159265358979323846
 
+volatile sig_atomic_t running = 1;
+
 struct Exoplanet
 {
     const char *name;
@@ -313,8 +315,6 @@ int process_request(ssh_session session)
     return SSH_OK;
 }
 
-volatile sig_atomic_t running = 1;
-
 void handle_signal(int signal)
 {
     (void)signal; // to avoid unused parameter warning
@@ -323,68 +323,79 @@ void handle_signal(int signal)
 
 int main()
 {
-    ssh_bind sshbind;
-    ssh_session session;
-    int ret_val = 0; // By default, the main function will return this value
+    ssh_bind sshbind;    // SSH bind object for the server-side configuration
+    ssh_session session; // SSH session object for client connections
+    int ret_val = 0;     // By default, the main function will return this value if there's no error
 
-    signal(SIGINT, handle_signal); // Handle Ctrl+C
+    signal(SIGINT, handle_signal); // Handle Ctrl+C interrupts gracefully
 
+    // Create a new SSH bind object
     sshbind = ssh_bind_new();
 
+    // Check if the SSH bind object was created successfully
     if (sshbind == NULL)
     {
         fprintf(stderr, "Error creating ssh_bind object\n");
-        return 1;
+        return 1; // Exit with error code
     }
 
-    // Set SSH bind options
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "0.0.0.0");
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, "2222");
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "ssh-rsa");
-    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY, "/opt/exoplanet.pem");
+    // Configure SSH bind object options
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "0.0.0.0");          // Bind to all available interfaces
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, "2222");         // Set the bind port to 2222
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "ssh-rsa");           // Set the hostkey type
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY, "/opt/exoplanet.pem"); // Set the path to the RSA key file
 
+    // Try to start listening for incoming SSH connections
     if (ssh_bind_listen(sshbind) < 0)
     {
         fprintf(stderr, "Error binding to address and port: %s\n", ssh_get_error(sshbind));
-        ret_val = 1;
-        goto cleanup; // Use a goto statement for cleanup, ensuring all resources are properly freed
+        ret_val = 1;  // Set return value to indicate error
+        goto cleanup; // Jump to cleanup to free resources
     }
 
-    printf("Listening on port 2222...\n");
+    printf("Listening on port 2222...\n"); // Inform user the server is ready
 
+    // Main loop: wait for and handle incoming SSH connections
     while (running)
     {
+        // Create a new SSH session object for each incoming connection
         session = ssh_new();
 
+        // Check if the SSH session object was created successfully
         if (session == NULL)
         {
             fprintf(stderr, "Error creating SSH session\n");
             ret_val = 1;
-            break;
+            break; // Exit the loop on error
         }
 
+        // Wait for an incoming connection and establish an SSH session
         if (ssh_bind_accept(sshbind, session) == SSH_ERROR)
         {
             fprintf(stderr, "Error accepting SSH connection\n");
             ret_val = 1;
-            ssh_free(session);
-            break;
+            ssh_free(session); // Free the session resource
+            break;             // Exit the loop on error
         }
 
-        pthread_t thread;
+        pthread_t thread; // Thread object to handle the established SSH session
+
+        // Create a new thread to handle the SSH session
         int err = pthread_create(&thread, NULL, handle_session, session);
         if (err)
         {
             fprintf(stderr, "Error creating thread\n");
             ret_val = 1;
-            ssh_free(session);
-            break;
+            ssh_free(session); // Free the session resource
+            break;             // Exit the loop on error
         }
 
-        // Detach the thread so the system will automatically reclaim resources when the thread finishes.
+        // Detach the thread so the system will automatically reclaim resources when the thread finishes
         pthread_detach(thread);
     }
 
+// Cleanup: free the SSH bind object
+cleanup:
     ssh_bind_free(sshbind);
-    return ret_val;
+    return ret_val; // Return the final status
 }
