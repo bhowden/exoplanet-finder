@@ -12,10 +12,11 @@ connections, processes requests, and sends back the calculated results.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h >	// Include this header for time functions
-#include <math.h >	// Include this header for mathematical functions
+#include <time.h>	// Include this header for time functions
+#include <math.h>	// Include this header for mathematical functions
 #include <libssh/libssh.h>
 #include <jansson.h>
+#include <signal.h>
 
 // Define constants
 #define PI 3.14159265358979323846
@@ -47,6 +48,12 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
 
     // Calculate eccentric anomaly using mean anomaly
     double eccentric_anomaly = solveKeplersEquation(mean_anomaly, planet->eccentricity);
+
+    if (isnan(eccentric_anomaly)) {
+        planet->distance = NAN;
+        planet->ra = NAN;
+        return;  // Exit the function early
+    }
 
    // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
@@ -85,18 +92,16 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
 // Function to solve Kepler's equation for the eccentric anomaly (E) given mean anomaly (M) and eccentricity (e)
 // This uses the Newton-Raphson method.
 double solveKeplersEquation(double M, double e) {
-    // Initial guess for eccentric anomaly is the mean anomaly
     double E = M;
-    double delta = 0.000001;  // desired accuracy
+    double delta = 0.000001;
 
-    for (int i = 0; i < 100; i++) {  // max 100 iterations for convergence
+    for (int i = 0; i < 100; i++) {
         double f = E - e * sin(E) - M;
         double f_prime = 1 - e * cos(E);
         
-        // Newton's method update
         double E_new = E - f / f_prime;
 
-        // Check for convergence
+        // check for convergence
         if (fabs(E_new - E) < delta) {
             return E_new;
         }
@@ -104,8 +109,7 @@ double solveKeplersEquation(double M, double e) {
         E = E_new;
     }
 
-    // If we're here, the method didn't converge; this is a fallback.
-    return E;
+    return NAN;  // Return NaN if not converged
 }
 
 int process_request(ssh_session session) {
@@ -150,48 +154,59 @@ int process_request(ssh_session session) {
     root = json_loads(buffer, 0, &error);
 
     if (root) {
-    // Update exoplanet properties from JSON
-    json_t *mass_json = json_object_get(root, "mass");
-    if (json_is_number(mass_json))
-        exoplanet.mass = json_number_value(mass_json);
+        // Update exoplanet properties from JSON
+        json_t *mass_json = json_object_get(root, "mass");
+        if (json_is_number(mass_json))
+            exoplanet.mass = json_number_value(mass_json);
 
-    json_t *planet_radius_json = json_object_get(root, "planet_radius");
-    if (json_is_number(planet_radius_json))
-        exoplanet.planet_radius = json_number_value(planet_radius_json);
+        json_t *planet_radius_json = json_object_get(root, "planet_radius");
+        if (json_is_number(planet_radius_json))
+            exoplanet.planet_radius = json_number_value(planet_radius_json);
 
-    json_t *orbital_radius_json = json_object_get(root, "orbital_radius");
-    if (json_is_number(orbital_radius_json))
-        exoplanet.orbital_radius = json_number_value(orbital_radius_json);
+        json_t *orbital_radius_json = json_object_get(root, "orbital_radius");
+        if (json_is_number(orbital_radius_json))
+            exoplanet.orbital_radius = json_number_value(orbital_radius_json);
 
-    json_t *orbital_period_json = json_object_get(root, "orbital_period");
-    if (json_is_number(orbital_period_json))
-        exoplanet.orbital_period = json_number_value(orbital_period_json);
+        json_t *orbital_period_json = json_object_get(root, "orbital_period");
+        if (json_is_number(orbital_period_json))
+            exoplanet.orbital_period = json_number_value(orbital_period_json);
 
-    json_t *eccentricity_json = json_object_get(root, "eccentricity");
-    if (json_is_number(eccentricity_json))
-        exoplanet.eccentricity = json_number_value(eccentricity_json);
+        json_t *eccentricity_json = json_object_get(root, "eccentricity");
+        if (json_is_number(eccentricity_json))
+            exoplanet.eccentricity = json_number_value(eccentricity_json);
 
-    json_t *inclination_json = json_object_get(root, "inclination");
-    if (json_is_number(inclination_json))
-        exoplanet.inclination = json_number_value(inclination_json);
+        json_t *inclination_json = json_object_get(root, "inclination");
+        if (json_is_number(inclination_json))
+            exoplanet.inclination = json_number_value(inclination_json);
 
-    json_t *longitude_of_node_json = json_object_get(root, "longitude_of_node");
-    if (json_is_number(longitude_of_node_json))
-        exoplanet.longitude_of_node = json_number_value(longitude_of_node_json);
+        json_t *longitude_of_node_json = json_object_get(root, "longitude_of_node");
+        if (json_is_number(longitude_of_node_json))
+            exoplanet.longitude_of_node = json_number_value(longitude_of_node_json);
 
-    json_t *argument_of_periapsis_json = json_object_get(root, "argument_of_periapsis");
-    if (json_is_number(argument_of_periapsis_json))
-        exoplanet.argument_of_periapsis = json_number_value(argument_of_periapsis_json);
+        json_t *argument_of_periapsis_json = json_object_get(root, "argument_of_periapsis");
+        if (json_is_number(argument_of_periapsis_json))
+            exoplanet.argument_of_periapsis = json_number_value(argument_of_periapsis_json);
 
-    json_t *unix_time_json = json_object_get(root, "unix_time");
-    if (json_is_number(unix_time_json))
-        exoplanet.unix_time = json_number_value(unix_time_json);
+        json_t *unix_time_json = json_object_get(root, "unix_time");
+        if (json_is_number(unix_time_json))
+            exoplanet.unix_time = json_number_value(unix_time_json);
 
-    // ... (Parse other properties if needed)
-    json_decref(root);
-} else {
-    fprintf(stderr, "Error parsing JSON: %s\n", error.text);
-}
+
+
+        json_t *distance_json = json_object_get(root, "distance");
+        if (json_is_number(distance_json))
+            exoplanet.distance = json_number_value(distance_json);
+        // If it's not a number, the initialized value of 0.0 will remain
+
+        json_t *ra_json = json_object_get(root, "ra");
+        if (json_is_number(ra_json))
+            exoplanet.ra = json_number_value(ra_json);
+        // If it's not a number, the initialized value of 0.0 will remain
+        // ... (Parse other properties if needed)
+        json_decref(root);
+    } else {
+        fprintf(stderr, "Error parsing JSON: %s\n", error.text);
+    }
 
     // Convert system time to a double (in seconds)
     double current_time;
@@ -209,13 +224,36 @@ int process_request(ssh_session session) {
     // Calculate the distance to the exoplanet & the Right Ascension (RA)
     calculateRaAndDistance(&exoplanet, current_time);
 
-    // Create a JSON object with distance and RA
+    // Serialize the entire modified Exoplanet struct to JSON
     json_t *response = json_object();
-    json_object_set_new(response, "distance", json_real(distance));
-    json_object_set_new(response, "ra", json_real(ra));
+
+    json_object_set_new(response, "name", json_string(exoplanet.name));
+    json_object_set_new(response, "mass", json_real(exoplanet.mass));
+    json_object_set_new(response, "planet_radius", json_real(exoplanet.planet_radius));
+    json_object_set_new(response, "orbital_radius", json_real(exoplanet.orbital_radius));
+    json_object_set_new(response, "orbital_period", json_real(exoplanet.orbital_period));
+    json_object_set_new(response, "eccentricity", json_real(exoplanet.eccentricity));
+    json_object_set_new(response, "inclination", json_real(exoplanet.inclination));
+    json_object_set_new(response, "longitude_of_node", json_real(exoplanet.longitude_of_node));
+    json_object_set_new(response, "argument_of_periapsis", json_real(exoplanet.argument_of_periapsis));
+    json_object_set_new(response, "unix_time", json_real(exoplanet.unix_time));
+
+    if (isnan(exoplanet.distance) || isnan(exoplanet.ra)) {
+        // Indicate there was an error in solving Kepler's equation
+        json_object_set_new(response, "error", json_string("Failed to solve Kepler's equation given the input."));
+
+        // You can choose to omit ra and distance or set them to null values
+        json_object_set_new(response, "distance", json_null());
+        json_object_set_new(response, "ra", json_null());
+    } else {
+        json_object_set_new(response, "distance", json_real(exoplanet.distance));
+        json_object_set_new(response, "ra", json_real(exoplanet.ra));
+    }
 
     // Serialize the JSON object to a string
     char *response_str = json_dumps(response, JSON_COMPACT);
+
+    // Clean up the JSON object
     json_decref(response);
 
     // Send the response
@@ -223,82 +261,84 @@ int process_request(ssh_session session) {
     ssh_channel_send_eof(channel);
     ssh_channel_close(channel);
     ssh_channel_free(channel);
-    free(response_str); // Free the allocated string
+
+    // Free the allocated string
+    free(response_str);
+
     return SSH_OK;
+
 }
 
-int main()
-{
-	ssh_session session;
+volatile sig_atomic_t running = 1;
 
-	// Set up SSH session
-	session = ssh_new();
-	if (session == NULL)
-	{
-		return 1;
-	}
+void handle_signal(int signal) {
+    (void) signal; // to avoid unused parameter warning
+    running = 0;
+}
 
-	// Load private key from /opt/private_key.pem
-	if (ssh_options_set(session, SSH_OPTIONS_PRIVATEKEY, "/opt/exoplanet.pem") != SSH_OK)
-	{
-		fprintf(stderr, "Error setting private key: %s\n", ssh_get_error(session));
-		ssh_free(session);
-		return 1;
-	}
+int main() {
+    ssh_bind sshbind;
+    ssh_session session;
+    int ret_val = 0; // By default, the main function will return this value
 
-	// Set SSH options
-	ssh_options_set(session, SSH_OPTIONS_HOST, "0.0.0.0");
-	ssh_options_set(session, SSH_OPTIONS_PORT, "2222");
+    signal(SIGINT, handle_signal); // Handle Ctrl+C
 
-	// Connect
-	if (ssh_connect(session) != SSH_OK)
-	{
-		fprintf(stderr, "Error connecting: %s\n", ssh_get_error(session));
-		ssh_free(session);
-		return 1;
-	}
+    sshbind = ssh_bind_new();
 
-	// Start SSH server
-	if (ssh_bind(session, session) != SSH_OK)
-	{
-		fprintf(stderr, "Error binding session: %s\n", ssh_get_error(session));
-		ssh_free(session);
-		return 1;
-	}
+    if (sshbind == NULL)
+    {
+        fprintf(stderr, "Error creating ssh_bind object\n");
+        return 1;
+    }
 
-	// Listen for connections
-	if (ssh_listen(session) < 0)
-	{
-		fprintf(stderr, "Error listening: %s\n", ssh_get_error(session));
-		ssh_free(session);
-		return 1;
-	}
+    // Set SSH bind options
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDADDR, "0.0.0.0");
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_BINDPORT_STR, "2222");
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_HOSTKEY, "ssh-rsa");
+    ssh_bind_options_set(sshbind, SSH_BIND_OPTIONS_RSAKEY, "/opt/exoplanet.pem");
 
-	printf("Listening on port 2222...\n");
+    if (ssh_bind_listen(sshbind) < 0)
+    {
+        fprintf(stderr, "Error binding to address and port: %s\n", ssh_get_error(sshbind));
+        ret_val = 1;
+        goto cleanup; // Use a goto statement for cleanup, ensuring all resources are properly freed
+    }
 
-	while (1)
-	{
-		ssh_session client_session = ssh_accept(session);
-		if (client_session == NULL)
-		{
-			fprintf(stderr, "Error accepting incoming connection\n");
-			ssh_free(session);
-			return 1;
-		}
+    printf("Listening on port 2222...\n");
 
-		printf("Accepted a connection\n");
+    while (running)
+    {
+        session = ssh_new();
+        if (!session)
+        {
+            fprintf(stderr, "Error creating session\n");
+            ret_val = 1;
+            goto cleanup;
+        }
 
-		if (process_request(client_session) != SSH_OK)
-		{
-			fprintf(stderr, "Error processing request\n");
-			ssh_disconnect(client_session);
-		}
+        if (ssh_bind_accept(sshbind, session) == SSH_ERROR)
+        {
+            fprintf(stderr, "Error accepting a connection: %s\n", ssh_get_error(sshbind));
+            ssh_free(session);
+            continue;
+        }
 
-		ssh_disconnect(client_session);
-	}
+        printf("Accepted a connection\n");
 
-	ssh_bind_free(session);
-	ssh_finalize();
+        if (process_request(session) != SSH_OK) 
+        {
+            fprintf(stderr, "Error processing request\n");
+            ssh_disconnect(session);
+            ssh_free(session);
+            continue;
+        }
 
-	return 0;
+        ssh_disconnect(session);
+        ssh_free(session);
+    }
+
+    ssh_bind_free(sshbind);
+    ssh_finalize();
+
+    return ret_val;
 }

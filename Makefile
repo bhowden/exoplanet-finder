@@ -6,7 +6,7 @@ SRC = exoplanet-finder.c
 
 all: exoplanet-finder
 
-exoplanet_server: $(SRC)
+exoplanet-finder: $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:
