@@ -36,28 +36,9 @@ struct Exoplanet {
 };
 
 
-double calculateDistance(const struct Exoplanet *planet, double current_time)
-{
-    // Convert orbital period to seconds
-    double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
-
-    // Calculate mean anomaly using Kepler's equation
-    double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
-
-    // Calculate eccentric anomaly using mean anomaly (assumes circular orbit)
-    double eccentric_anomaly = mean_anomaly;
-
-    // Calculate distance using Kepler's Third Law (AU)
-    double distance_au = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
-
-    // Convert distance from AU to light years (1 AU = 0.0000158125074 light years)
-    double distance_light_years = distance_au * 0.0000158125074;
-
-    return planet->distance;
-}
 
 // Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
-double calculateRa(const struct Exoplanet *planet, double current_time) {
+void calculateRaAndDistance(const struct Exoplanet *planet, double current_time) {
     // Convert orbital period to seconds
     double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
 
@@ -69,6 +50,10 @@ double calculateRa(const struct Exoplanet *planet, double current_time) {
 
     // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
+
+    double distance_light_years =  * 0.0000158125074;
+
+    planet->distance = distance_light_years;
 
     // Calculate the true anomaly
     double true_anomaly = 2 * atan(sqrt((1 + planet->eccentricity) / (1 - planet->eccentricity)) * tan(eccentric_anomaly / 2));
@@ -92,7 +77,7 @@ double calculateRa(const struct Exoplanet *planet, double current_time) {
     double ra = atan2(y_eq, x_eq);
 
     planet->ra = ra;
-    return planet->ra;
+
 }
 
 int process_request(ssh_session session) {
@@ -193,11 +178,8 @@ int process_request(ssh_session session) {
         current_time = (double) raw_time;
     }
 
-    // Calculate the distance to the exoplanet
-    double distance = calculateDistance(&exoplanet, current_time);
-
-    // Calculate the Right Ascension (RA)
-    double ra = calculateRa(&exoplanet, current_time);
+    // Calculate the distance to the exoplanet & the Right Ascension (RA)
+    double ra = calculateRaAndDistance(&exoplanet, current_time);
 
     // Create a JSON object with distance and RA
     json_t *response = json_object();
