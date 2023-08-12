@@ -1,8 +1,8 @@
 /*
-This C code defines a program that acts as an Exoplanet Server, calculating various parameters related to 
-exoplanets based on their orbital properties. The program includes functionality to calculate the distance 
-to an exoplanet using Kepler's equations, as well as the Right Ascension (RA) of the exoplanet. 
-The program is designed to be accessed via SSH and responds to incoming JSON data with calculated 
+This C code defines a program that acts as an Exoplanet Server, calculating various parameters related to
+exoplanets based on their orbital properties. The program includes functionality to calculate the distance
+to an exoplanet using Kepler's equations, as well as the Right Ascension (RA) of the exoplanet.
+The program is designed to be accessed via SSH and responds to incoming JSON data with calculated
 distance and RA values in a JSON object. The code also utilizes the libssh library for SSH communication
 and the jansson library for JSON handling. It defines a struct Exoplanet to hold exoplanet data and
 includes functions to perform calculations based on this data. The program listens for incoming SSH
@@ -12,8 +12,8 @@ connections, processes requests, and sends back the calculated results.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>	// Include this header for time functions
-#include <math.h>	// Include this header for mathematical functions
+#include <time.h> // Include this header for time functions
+#include <math.h> // Include this header for mathematical functions
 #include <libssh/libssh.h>
 #include <jansson.h>
 #include <signal.h>
@@ -22,23 +22,25 @@ connections, processes requests, and sends back the calculated results.
 // Define constants
 #define PI 3.14159265358979323846
 
-struct Exoplanet {
+struct Exoplanet
+{
     const char *name;
-    double mass;                   // in Jupiters
-    double planet_radius;          // in Jupiter radii
-    double orbital_radius;         // in AU
-    double orbital_period;         // in years
+    double mass;           // in Jupiters
+    double planet_radius;  // in Jupiter radii
+    double orbital_radius; // in AU
+    double orbital_period; // in years
     double eccentricity;
-    double inclination;            // Orbital inclination in degrees
-    double longitude_of_node;      // Longitude of the ascending node in degrees
-    double argument_of_periapsis;  // Argument of periapsis in degrees
-    double unix_time;              // Optional Unix time in seconds
-    double distance;               // Calculated distance result
-    double ra;                     // Calculated Right Ascension result
+    double inclination;           // Orbital inclination in degrees
+    double longitude_of_node;     // Longitude of the ascending node in degrees
+    double argument_of_periapsis; // Argument of periapsis in degrees
+    double unix_time;             // Optional Unix time in seconds
+    double distance;              // Calculated distance result
+    double ra;                    // Calculated Right Ascension result
 };
 
 // The function that will run on each thread to handle the session
-void *handle_session(void *arg) {
+void *handle_session(void *arg)
+{
     ssh_session session = (ssh_session)arg;
     process_request(session);
     ssh_disconnect(session);
@@ -47,7 +49,8 @@ void *handle_session(void *arg) {
 }
 
 // Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
-void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
+void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
+{
     // Convert orbital period to seconds
     double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
 
@@ -57,13 +60,14 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
     // Calculate eccentric anomaly using mean anomaly
     double eccentric_anomaly = solveKeplersEquation(mean_anomaly, planet->eccentricity);
 
-    if (isnan(eccentric_anomaly)) {
+    if (isnan(eccentric_anomaly))
+    {
         planet->distance = NAN;
         planet->ra = NAN;
-        return;  // Exit the function early
+        return; // Exit the function early
     }
 
-   // Calculate distance from the focus (center of mass) to the exoplanet
+    // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
     double distance_light_years = distance * 0.0000158125074;
@@ -83,57 +87,72 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
     double periapsis_rad = planet->argument_of_periapsis * (PI / 180.0);
 
     // Calculate the x, y, z coordinates in the equatorial plane
-    double x_eq = x_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad))
-                 - y_orbital * (sin(node_rad) * cos(periapsis_rad) + cos(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
-    double y_eq = x_orbital * (cos(node_rad) * sin(periapsis_rad) + sin(node_rad) * cos(periapsis_rad) * cos(inclination_rad))
-                 + y_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
+    double x_eq = x_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad)) - y_orbital * (sin(node_rad) * cos(periapsis_rad) + cos(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
+    double y_eq = x_orbital * (cos(node_rad) * sin(periapsis_rad) + sin(node_rad) * cos(periapsis_rad) * cos(inclination_rad)) + y_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
 
     // After obtaining the x and y equatorial coordinates, proceed to calculate the right ascension (RA) using the atan2 function
     double ra = atan2(y_eq, x_eq);
 
-    if (ra < 0) ra += 2 * PI;
+    if (ra < 0)
+        ra += 2 * PI;
 
     planet->ra = ra;
-
 }
 
 // Function to solve Kepler's equation for the eccentric anomaly (E) given mean anomaly (M) and eccentricity (e)
 // This uses the Newton-Raphson method.
-double solveKeplersEquation(double M, double e) {
+double solveKeplersEquation(double M, double e)
+{
     double E = M;
     double delta = 0.000001;
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         double f = E - e * sin(E) - M;
         double f_prime = 1 - e * cos(E);
-        
+
         double E_new = E - f / f_prime;
 
         // check for convergence
-        if (fabs(E_new - E) < delta) {
+        if (fabs(E_new - E) < delta)
+        {
             return E_new;
         }
-        
+
         E = E_new;
     }
 
-    return NAN;  // Return NaN if not converged
+    return NAN; // Return NaN if not converged
 }
 
-int process_request(ssh_session session) {
+int process_request(ssh_session session)
+{
+    // Allocate a buffer to store data received from the SSH channel.
     char buffer[256];
+
+    // Declare an SSH channel variable.
     ssh_channel channel;
+
+    // Declare a variable to store the number of bytes read.
     int nbytes;
 
+    // Create a new SSH channel for the given session.
     channel = ssh_channel_new(session);
+    // Check if the channel creation was successful.
     if (channel == NULL)
-        return SSH_ERROR;
+        return SSH_ERROR; // Return an error if the channel creation failed.
 
-    if (ssh_channel_open_session(channel) != SSH_OK) {
+    // Attempt to open the created SSH channel as a session.
+    if (ssh_channel_open_session(channel) != SSH_OK)
+    {
+        // If opening the session fails, free the allocated channel resources.
         ssh_channel_free(channel);
+        // Return an error as the session couldn't be opened.
         return SSH_ERROR;
     }
 
+    // Send a command to execute on the remote server via the SSH channel.
+    // Here, the command is to echo the string "D:" without appending a newline.
     ssh_channel_request_exec(channel, "echo -n D:");
 
     // Define the exoplanet data
@@ -161,7 +180,8 @@ int process_request(ssh_session session) {
     json_error_t error;
     root = json_loads(buffer, 0, &error);
 
-    if (root) {
+    if (root)
+    {
         // Update exoplanet properties from JSON
         json_t *mass_json = json_object_get(root, "mass");
         if (json_is_number(mass_json))
@@ -199,8 +219,6 @@ int process_request(ssh_session session) {
         if (json_is_number(unix_time_json))
             exoplanet.unix_time = json_number_value(unix_time_json);
 
-
-
         json_t *distance_json = json_object_get(root, "distance");
         if (json_is_number(distance_json))
             exoplanet.distance = json_number_value(distance_json);
@@ -212,7 +230,9 @@ int process_request(ssh_session session) {
         // If it's not a number, the initialized value of 0.0 will remain
         // ... (Parse other properties if needed)
         json_decref(root);
-    } else {
+    }
+    else
+    {
         fprintf(stderr, "Error parsing JSON: %s\n", error.text);
         return SSH_ERROR;
     }
@@ -221,13 +241,16 @@ int process_request(ssh_session session) {
     double current_time;
 
     // Check if unix_time is provided and not null
-    if (exoplanet.unix_time > 0) {
+    if (exoplanet.unix_time > 0)
+    {
         current_time = exoplanet.unix_time;
-    } else {
+    }
+    else
+    {
         // Get the current system time
         time_t raw_time;
         time(&raw_time);
-        current_time = (double) raw_time;
+        current_time = (double)raw_time;
     }
 
     // Calculate the distance to the exoplanet & the Right Ascension (RA)
@@ -247,14 +270,17 @@ int process_request(ssh_session session) {
     json_object_set_new(response, "argument_of_periapsis", json_real(exoplanet.argument_of_periapsis));
     json_object_set_new(response, "unix_time", json_real(exoplanet.unix_time));
 
-    if (isnan(exoplanet.distance) || isnan(exoplanet.ra)) {
+    if (isnan(exoplanet.distance) || isnan(exoplanet.ra))
+    {
         // Indicate there was an error in solving Kepler's equation
         json_object_set_new(response, "error", json_string("Failed to solve Kepler's equation given the input."));
 
         // You can choose to omit ra and distance or set them to null values
         json_object_set_new(response, "distance", json_null());
         json_object_set_new(response, "ra", json_null());
-    } else {
+    }
+    else
+    {
         json_object_set_new(response, "distance", json_real(exoplanet.distance));
         json_object_set_new(response, "ra", json_real(exoplanet.ra));
     }
@@ -275,17 +301,18 @@ int process_request(ssh_session session) {
     free(response_str);
 
     return SSH_OK;
-
 }
 
 volatile sig_atomic_t running = 1;
 
-void handle_signal(int signal) {
-    (void) signal; // to avoid unused parameter warning
+void handle_signal(int signal)
+{
+    (void)signal; // to avoid unused parameter warning
     running = 0;
 }
 
-int main() {
+int main()
+{
     ssh_bind sshbind;
     ssh_session session;
     int ret_val = 0; // By default, the main function will return this value
@@ -294,7 +321,8 @@ int main() {
 
     sshbind = ssh_bind_new();
 
-    if (sshbind == NULL) {
+    if (sshbind == NULL)
+    {
         fprintf(stderr, "Error creating ssh_bind object\n");
         return 1;
     }
@@ -317,36 +345,36 @@ int main() {
     while (running)
     {
         session = ssh_new();
-        if (!session)
+
+        if (session == NULL)
         {
-            fprintf(stderr, "Error creating session\n");
+            fprintf(stderr, "Error creating SSH session\n");
             ret_val = 1;
-            goto cleanup;
+            break;
         }
 
         if (ssh_bind_accept(sshbind, session) == SSH_ERROR)
         {
-            fprintf(stderr, "Error accepting a connection: %s\n", ssh_get_error(sshbind));
+            fprintf(stderr, "Error accepting SSH connection\n");
+            ret_val = 1;
             ssh_free(session);
-            continue;
+            break;
         }
 
-        printf("Accepted a connection\n");
-
-        if (process_request(session) != SSH_OK) 
+        pthread_t thread;
+        int err = pthread_create(&thread, NULL, handle_session, session);
+        if (err)
         {
-            fprintf(stderr, "Error processing request\n");
-            ssh_disconnect(session);
+            fprintf(stderr, "Error creating thread\n");
+            ret_val = 1;
             ssh_free(session);
-            continue;
+            break;
         }
 
-        ssh_disconnect(session);
-        ssh_free(session);
+        // Detach the thread so the system will automatically reclaim resources when the thread finishes.
+        pthread_detach(thread);
     }
 
     ssh_bind_free(sshbind);
-    ssh_finalize();
-
     return ret_val;
 }
