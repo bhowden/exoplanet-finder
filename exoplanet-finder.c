@@ -101,30 +101,42 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     planet->ra = ra;
 }
 
-// Function to solve Kepler's equation for the eccentric anomaly (E) given mean anomaly (M) and eccentricity (e)
-// This uses the Newton-Raphson method.
+// Function to solve Kepler's equation for the eccentric anomaly (E) using the Newton-Raphson method.
+// Parameters:
+// - M: Mean anomaly
+// - e: Eccentricity of the orbit
 double solveKeplersEquation(double M, double e)
 {
+    // Initial approximation for eccentric anomaly
     double E = M;
+
+    // Tolerance for convergence
     double delta = 0.000001;
 
+    // Loop for a maximum of 100 iterations (this number can be adjusted as needed)
     for (int i = 0; i < 100; i++)
     {
+        // Calculate the value of Kepler's equation at the current approximation
         double f = E - e * sin(E) - M;
+
+        // Calculate the derivative of Kepler's equation with respect to E
         double f_prime = 1 - e * cos(E);
 
+        // Update the approximation using the Newton-Raphson formula
         double E_new = E - f / f_prime;
 
-        // check for convergence
+        // Check for convergence: if the change in E is less than the defined tolerance, the method has converged
         if (fabs(E_new - E) < delta)
         {
             return E_new;
         }
 
+        // Update the value of E for the next iteration
         E = E_new;
     }
 
-    return NAN; // Return NaN if not converged
+    // If the method hasn't converged after the maximum number of iterations, return NaN
+    return NAN;
 }
 
 int process_request(ssh_session session)
