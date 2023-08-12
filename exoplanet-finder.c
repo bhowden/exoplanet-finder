@@ -17,6 +17,7 @@ connections, processes requests, and sends back the calculated results.
 #include <libssh/libssh.h>
 #include <jansson.h>
 #include <signal.h>
+#include <pthread.h>
 
 // Define constants
 #define PI 3.14159265358979323846
@@ -36,7 +37,14 @@ struct Exoplanet {
     double ra;                     // Calculated Right Ascension result
 };
 
-
+// The function that will run on each thread to handle the session
+void *handle_session(void *arg) {
+    ssh_session session = (ssh_session)arg;
+    process_request(session);
+    ssh_disconnect(session);
+    ssh_free(session);
+    return NULL;
+}
 
 // Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
 void calculateRaAndDistance(struct Exoplanet *planet, double current_time) {
@@ -206,6 +214,7 @@ int process_request(ssh_session session) {
         json_decref(root);
     } else {
         fprintf(stderr, "Error parsing JSON: %s\n", error.text);
+        return SSH_ERROR;
     }
 
     // Convert system time to a double (in seconds)
@@ -285,8 +294,7 @@ int main() {
 
     sshbind = ssh_bind_new();
 
-    if (sshbind == NULL)
-    {
+    if (sshbind == NULL) {
         fprintf(stderr, "Error creating ssh_bind object\n");
         return 1;
     }
