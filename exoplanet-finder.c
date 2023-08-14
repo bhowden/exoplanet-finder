@@ -29,7 +29,13 @@ connections, processes requests, and sends back the calculated results.
 // right ascension of the North Galactic Pole (in degrees).
 #define RA_NGP 192.85948
 
+#define RAD_TO_DEG(radians) ((radians) * (180.0 / PI))
+
 volatile sig_atomic_t running = 1;
+
+void process_request(ssh_session session);
+double solveKeplersEquation(double M, double e);
+void equatorial_to_galactic(double ra, double dec, double *l, double *b);
 
 struct Exoplanet
 {
