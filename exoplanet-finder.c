@@ -22,6 +22,13 @@ connections, processes requests, and sends back the calculated results.
 // Define constants
 #define PI 3.14159265358979323846
 
+// position angle of the North Celestial Pole (in degrees) in Galactic coordinates
+#define ANGLE_NCP 123.932
+// the declination of the North Galactic Pole (in degrees)
+#define DEC_NGP 27.12825
+// right ascension of the North Galactic Pole (in degrees).
+#define RA_NGP 192.85948
+
 volatile sig_atomic_t running = 1;
 
 struct Exoplanet
@@ -38,6 +45,9 @@ struct Exoplanet
     double unix_time;             // Optional Unix time in seconds
     double distance;              // Calculated distance result
     double ra;                    // Calculated Right Ascension result
+    double declination;
+    double galacticLongitude;
+    double galacticLatitude;
 };
 
 // The function that will run on each thread to handle the session
@@ -101,6 +111,22 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
         ra += 2 * PI;
 
     planet->ra = ra;
+
+    // Calculate the z coordinate in the equatorial plane
+    double z_eq = x_orbital * (sin(periapsis_rad) * sin(inclination_rad)) + y_orbital * (cos(periapsis_rad) * sin(inclination_rad));
+
+    // Calculate declination (Dec) using the z coordinate
+    double dec = asin(z_eq / sqrt(x_eq * x_eq + y_eq * y_eq + z_eq * z_eq));
+
+    planet->declination = RAD_TO_DEG(dec); // Convert declination from radians to degrees
+}
+
+void setGalacticCoordinates(struct Exoplanet *planet)
+{
+    double l, b;
+    equatorial_to_galactic(planet->ra, planet->declination, &l, &b);
+    planet->galacticLongitude = l;
+    planet->galacticLatitude = b;
 }
 
 // Function to solve Kepler's equation for the eccentric anomaly (E) using the Newton-Raphson method.
@@ -139,6 +165,38 @@ double solveKeplersEquation(double M, double e)
 
     // If the method hasn't converged after the maximum number of iterations, return NaN
     return NAN;
+}
+
+void equatorial_to_galactic(double ra, double dec, double *l, double *b)
+{
+    // Convert input angles from degrees to radians
+    double ra_rad = DEG_TO_RAD(ra);
+    double dec_rad = DEG_TO_RAD(dec);
+
+    // Convert equatorial coordinates to cartesian coordinates
+    double x = cos(dec_rad) * cos(ra_rad);
+    double y = cos(dec_rad) * sin(ra_rad);
+    double z = sin(dec_rad);
+
+    // Apply rotation matrix for equatorial to galactic transformation
+    double x_gal = -x * sin(DEG_TO_RAD(ANGLE_NCP)) + y * cos(DEG_TO_RAD(ANGLE_NCP));
+    double y_gal = -x * sin(DEG_TO_RAD(DEC_NGP)) * cos(DEG_TO_RAD(ANGLE_NCP)) - y * sin(DEG_TO_RAD(DEC_NGP)) * sin(DEG_TO_RAD(ANGLE_NCP)) + z * cos(DEG_TO_RAD(DEC_NGP));
+    double z_gal = x * cos(DEG_TO_RAD(DEC_NGP)) * cos(DEG_TO_RAD(ANGLE_NCP)) + y * cos(DEG_TO_RAD(DEC_NGP)) * sin(DEG_TO_RAD(ANGLE_NCP)) + z * sin(DEG_TO_RAD(DEC_NGP));
+
+    // Convert cartesian galactic coordinates to spherical coordinates
+    *l = atan2(y_gal, x_gal);
+    *b = asin(z_gal);
+
+    // Convert resulting l and b from radians to degrees
+    *l = fmod((*l + 2.0 * M_PI), (2.0 * M_PI)) * 180.0 / M_PI;
+    *b = *b * 180.0 / M_PI;
+
+    // Adjust the origin of l to be at the North Galactic Center
+    *l = *l - RA_NGP;
+    if (*l < 0)
+    {
+        *l += 360;
+    }
 }
 
 int process_request(ssh_session session)
@@ -236,6 +294,11 @@ int process_request(ssh_session session)
             exoplanet.distance = json_number_value(distance_json);
         // If it's not a number, the initialized value of 0.0 will remain
 
+        json_t *declination_json = json_object_get(root, "declination");
+        if (json_is_number(declination_json))
+            exoplanet.declination = json_number_value(declination_json);
+        // If it's not a number, the initialized value of 0.0 will remain
+
         json_t *ra_json = json_object_get(root, "ra");
         if (json_is_number(ra_json))
             exoplanet.ra = json_number_value(ra_json);
@@ -268,6 +331,9 @@ int process_request(ssh_session session)
     // Calculate the distance to the exoplanet & the Right Ascension (RA)
     calculateRaAndDistance(&exoplanet, current_time);
 
+    // set galactic coordinates
+    setGalacticCoordinates(&exoplanet);
+
     // Serialize the entire modified Exoplanet struct to JSON
     json_t *response = json_object();
 
@@ -280,6 +346,7 @@ int process_request(ssh_session session)
     json_object_set_new(response, "inclination", json_real(exoplanet.inclination));
     json_object_set_new(response, "longitude_of_node", json_real(exoplanet.longitude_of_node));
     json_object_set_new(response, "argument_of_periapsis", json_real(exoplanet.argument_of_periapsis));
+    json_object_set_new(response, "declination", json_real(exoplanet.declination));
     json_object_set_new(response, "unix_time", json_real(exoplanet.unix_time));
 
     if (isnan(exoplanet.distance) || isnan(exoplanet.ra))
@@ -319,6 +386,21 @@ void handle_signal(int signal)
 {
     (void)signal; // to avoid unused parameter warning
     running = 0;
+}
+
+// TODO: save galactic coordinates to Exoplanet struct
+void equatorial_to_galactic(double ra, double dec, double *l, double *b)
+{
+    // Define the transformation matrix based on the known rotation angles
+    // between the Equatorial and Galactic systems
+
+    // Convert (ra, dec) into a Cartesian position vector
+
+    // Multiply the position vector by the transformation matrix
+    // to get the Galactic position vector
+
+    // Convert the new position vector back into spherical coordinates
+    // to get (l, b)
 }
 
 int main()
