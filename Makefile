@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -g
-LIBS = -lssh -ljansson
+LIBS = -lssh -ljansson -lm
 
 SRC = exoplanet-finder.c
 
