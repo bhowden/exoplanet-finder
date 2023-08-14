@@ -12,14 +12,13 @@ connections, processes requests, and sends back the calculated results.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> // Include this header for time functions
-#include <math.h> // Include this header for mathematical functions
+#include <time.h>
+#include <math.h>
 #include <jansson.h>
 #include <signal.h>
 #include <pthread.h>
 #include <libssh/libssh.h>
 #include <libssh/server.h>
-#include <libssh/callbacks.h>
 
 // Define constants
 #define PI 3.14159265358979323846
