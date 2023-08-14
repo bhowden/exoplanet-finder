@@ -22,6 +22,10 @@ connections, processes requests, and sends back the calculated results.
 // Define constants
 #define PI 3.14159265358979323846
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 // position angle of the North Celestial Pole (in degrees) in Galactic coordinates
 #define ANGLE_NCP 123.932
 // the declination of the North Galactic Pole (in degrees)
@@ -30,10 +34,12 @@ connections, processes requests, and sends back the calculated results.
 #define RA_NGP 192.85948
 
 #define RAD_TO_DEG(radians) ((radians) * (180.0 / PI))
+#define DEG_TO_RAD(degrees) ((degrees) * (PI / 180.0))
+
 
 volatile sig_atomic_t running = 1;
 
-void process_request(ssh_session session);
+int process_request(ssh_session session);
 double solveKeplersEquation(double M, double e);
 void equatorial_to_galactic(double ra, double dec, double *l, double *b);
 
@@ -177,6 +183,7 @@ void equatorial_to_galactic(double ra, double dec, double *l, double *b)
 {
     // Convert input angles from degrees to radians
     double ra_rad = DEG_TO_RAD(ra);
+
     double dec_rad = DEG_TO_RAD(dec);
 
     // Convert equatorial coordinates to cartesian coordinates
@@ -392,21 +399,6 @@ void handle_signal(int signal)
 {
     (void)signal; // to avoid unused parameter warning
     running = 0;
-}
-
-// TODO: save galactic coordinates to Exoplanet struct
-void equatorial_to_galactic(double ra, double dec, double *l, double *b)
-{
-    // Define the transformation matrix based on the known rotation angles
-    // between the Equatorial and Galactic systems
-
-    // Convert (ra, dec) into a Cartesian position vector
-
-    // Multiply the position vector by the transformation matrix
-    // to get the Galactic position vector
-
-    // Convert the new position vector back into spherical coordinates
-    // to get (l, b)
 }
 
 int main()
