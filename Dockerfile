@@ -14,6 +14,9 @@ COPY Makefile /app/
 # Copy exoplanet.pem to /opt
 COPY exoplanet.pem /opt/exoplanet.pem
 
+# Set proper permissions for the private key
+RUN chmod 600 /opt/exoplanet.pem
+
 # Build the C program using the makefile
 RUN make
 
