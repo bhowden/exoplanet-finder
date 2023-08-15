@@ -5,7 +5,7 @@ FROM debian:latest
 WORKDIR /app
 
 # Install required packages (including gcc and other dependencies)
-RUN apt-get update && apt-get install -y gcc libssh-dev libjansson-dev
+RUN apt-get update && apt-get install -y gcc make libssh-dev libjansson-dev
 
 # Copy the source code and makefile into the container
 COPY *.c /app/
