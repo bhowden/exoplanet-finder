@@ -8,7 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y gcc libssh-dev libjansson-dev
 
 # Copy the source code and makefile into the container
-COPY exoplanet-finder.c /app/
+COPY *.c /app/
 COPY Makefile /app/
 
 # Copy exoplanet.pem to /opt
