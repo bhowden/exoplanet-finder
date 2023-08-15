@@ -250,6 +250,8 @@ int process_request(ssh_session session)
         .inclination = 0.0,
         .longitude_of_node = 0.0,
         .argument_of_periapsis = 0.0,
+        .galacticLongitude = 0.0,
+        .galacticLatitude = 0.0,
         .unix_time = 0.0,
         .distance = 0.0, // Initialize distance
         .ra = 0.0        // Initialize RA
@@ -360,6 +362,8 @@ int process_request(ssh_session session)
     json_object_set_new(response, "inclination", json_real(exoplanet.inclination));
     json_object_set_new(response, "longitude_of_node", json_real(exoplanet.longitude_of_node));
     json_object_set_new(response, "argument_of_periapsis", json_real(exoplanet.argument_of_periapsis));
+    json_object_set_new(response, "galacticLongitude", json_real(exoplanet.galacticLongitude));
+    json_object_set_new(response, "galacticLatitude", json_real(exoplanet.galacticLatitude));
     json_object_set_new(response, "declination", json_real(exoplanet.declination));
     json_object_set_new(response, "unix_time", json_real(exoplanet.unix_time));
 
