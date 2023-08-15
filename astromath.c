@@ -13,8 +13,6 @@
 double solveKeplersEquation(double M, double e);
 void equatorial_to_galactic(double ra, double dec, double *l, double *b);
 
-
-// plz add stay_alive to my struct
 struct Exoplanet
 {
     const char *name;
