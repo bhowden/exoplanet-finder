@@ -56,22 +56,7 @@ int process_request(ssh_session session)
         }
 
         // Define the exoplanet data
-        struct Exoplanet exoplanet = {
-                .name = "Default",
-                .mass = 8.053,
-                .planetRadius = 1.12,
-                .orbitalRadius = 2.774,
-                .orbitalPeriod = 4.8,
-                .eccentricity = 0.37,
-                .inclination = 0.0,
-                .longitudeOfNode = 0.0,
-                .argumentOfPeriapsis = 0.0,
-                .galacticLongitude = 0.0,
-                .galacticLatitude = 0.0,
-                .unixTime = 0.0,
-                .distance = 0.0, // Initialize distance
-                .ra = 0.0        // Initialize RA
-        };
+        struct Exoplanet exoplanet = get_default_exoplanet();
 
         // Receive JSON input from client
         nbytes = ssh_channel_read(channel, buffer, sizeof(buffer), 0);

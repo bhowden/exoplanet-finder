@@ -17,3 +17,24 @@ struct Exoplanet {
     double galacticLatitude;        // Galactic latitude in degrees
     int stayAlive;                  // Flag to keep the SSH connection alive (1 for true, 0 for false)
 };
+
+struct Exoplanet get_default_exoplanet() {
+    struct Exoplanet exoplanet = {
+            .name = "Default",
+            .mass = 8.053,
+            .planetRadius = 1.12,
+            .orbitalRadius = 2.774,
+            .orbitalPeriod = 4.8,
+            .eccentricity = 0.37,
+            .inclination = 0.0,
+            .longitudeOfNode = 0.0,
+            .argumentOfPeriapsis = 0.0,
+            .galacticLongitude = 0.0,
+            .galacticLatitude = 0.0,
+            .unixTime = 0.0,
+            .distance = 0.0,
+            .ra = 0.0
+    };
+
+    return exoplanet;
+}
