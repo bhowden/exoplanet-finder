@@ -3,3 +3,4 @@
 .gitignore
 *.asm
 exoplanet-finder
+*.pem
