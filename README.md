@@ -63,7 +63,7 @@ Once connected via SSH, you can send a JSON object to the service to calculate t
 To calculate the distance and RA, use the following command, replacing the JSON data with your desired values:
 
 ```sh
-echo '{"name": "Exoplanet Name", "mass": 5.0, "planet_radius": 1.2, "orbital_radius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0, "unix_time": 1691592726}' | ssh -p 2222 -i exoplanet.pem root@localhost
+echo '{"name": "Exoplanet Name", "mass": 5.0, "planetRadius": 1.2, "orbitalRadius": 3.0, "orbital_period": 6.0, "eccentricity": 0.2, "inclination": 30.0, "longitude_of_node": 45.0, "argument_of_periapsis": 120.0, "unix_time": 1691592726}' | ssh -p 2222 -i exoplanet.pem root@localhost
 ```
 
 Replace the values in the JSON object with your exoplanet's data. The `unix_time` property is optional. If provided, it specifies the Unix time in seconds for which the calculations are performed. If not provided, the calculations will be based on the current time.
@@ -93,8 +93,8 @@ The JSON object representing exoplanet data has the following properties:
 
 - `name` (string): The name of the exoplanet.
 - `mass` (number): The mass of the exoplanet in Jupiters.
-- `planet_radius` (number): The radius of the exoplanet in Jupiter radii.
-- `orbital_radius` (number): The orbital radius of the exoplanet in Astronomical Units (AU).
+- `planetRadius` (number): The radius of the exoplanet in Jupiter radii.
+- `orbitalRadius` (number): The orbital radius of the exoplanet in Astronomical Units (AU).
 - `orbital_period` (number): The orbital period of the exoplanet in years.
 - `eccentricity` (number): The eccentricity of the exoplanet's orbit. The eccentricity value ranges between 0 (circular orbit) and 1 (parabolic orbit), with values in between indicating elliptical orbits.
 - `inclination` (number): The orbital inclination of the exoplanet in degrees.
@@ -107,8 +107,8 @@ The JSON object representing exoplanet data has the following properties:
 The units used for each property in the JSON object are as follows:
 
 - `mass`: Jupiters (Jupiter mass)
-- `planet_radius`: Jupiter radii
-- `orbital_radius`: Astronomical Units (AU)
+- `planetRadius`: Jupiter radii
+- `orbitalRadius`: Astronomical Units (AU)
 - `orbital_period`: Years
 - `eccentricity`: Unitless (ratio)
 - `inclination`: Degrees
@@ -124,8 +124,8 @@ Here is an example of how the exoplanet data can be represented in JSON:
 {
     "name": "Super Earth",
     "mass": 9.1,
-    "planet_radius": 2.1,
-    "orbital_radius": 0.812,
+    "planetRadius": 2.1,
+    "orbitalRadius": 0.812,
     "orbital_period": 289.9,
     "eccentricity": 0.72,
     "inclination": 10.5,

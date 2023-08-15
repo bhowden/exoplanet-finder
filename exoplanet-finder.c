@@ -57,18 +57,18 @@ int process_request(ssh_session session)
 
         // Define the exoplanet data
         struct Exoplanet exoplanet = {
-                .name = "Gas Giant",
+                .name = "Default",
                 .mass = 8.053,
-                .planet_radius = 1.12,
-                .orbital_radius = 2.774,
-                .orbital_period = 4.8,
+                .planetRadius = 1.12,
+                .orbitalRadius = 2.774,
+                .orbitalPeriod = 4.8,
                 .eccentricity = 0.37,
                 .inclination = 0.0,
-                .longitude_of_node = 0.0,
-                .argument_of_periapsis = 0.0,
+                .longitudeOfNode = 0.0,
+                .argumentOfPeriapsis = 0.0,
                 .galacticLongitude = 0.0,
                 .galacticLatitude = 0.0,
-                .unix_time = 0.0,
+                .unixTime = 0.0,
                 .distance = 0.0, // Initialize distance
                 .ra = 0.0        // Initialize RA
         };
@@ -88,17 +88,17 @@ int process_request(ssh_session session)
             if (json_is_number(mass_json))
                 exoplanet.mass = json_number_value(mass_json);
 
-            json_t *planet_radius_json = json_object_get(root, "planet_radius");
+            json_t *planet_radius_json = json_object_get(root, "planetRadius");
             if (json_is_number(planet_radius_json))
-                exoplanet.planet_radius = json_number_value(planet_radius_json);
+                exoplanet.planetRadius = json_number_value(planet_radius_json);
 
-            json_t *orbital_radius_json = json_object_get(root, "orbital_radius");
+            json_t *orbital_radius_json = json_object_get(root, "orbitalRadius");
             if (json_is_number(orbital_radius_json))
-                exoplanet.orbital_radius = json_number_value(orbital_radius_json);
+                exoplanet.orbitalRadius = json_number_value(orbital_radius_json);
 
             json_t *orbital_period_json = json_object_get(root, "orbital_period");
             if (json_is_number(orbital_period_json))
-                exoplanet.orbital_period = json_number_value(orbital_period_json);
+                exoplanet.orbitalPeriod = json_number_value(orbital_period_json);
 
             json_t *eccentricity_json = json_object_get(root, "eccentricity");
             if (json_is_number(eccentricity_json))
@@ -110,15 +110,15 @@ int process_request(ssh_session session)
 
             json_t *longitude_of_node_json = json_object_get(root, "longitude_of_node");
             if (json_is_number(longitude_of_node_json))
-                exoplanet.longitude_of_node = json_number_value(longitude_of_node_json);
+                exoplanet.longitudeOfNode = json_number_value(longitude_of_node_json);
 
             json_t *argument_of_periapsis_json = json_object_get(root, "argument_of_periapsis");
             if (json_is_number(argument_of_periapsis_json))
-                exoplanet.argument_of_periapsis = json_number_value(argument_of_periapsis_json);
+                exoplanet.argumentOfPeriapsis = json_number_value(argument_of_periapsis_json);
 
-            json_t *unix_time_json = json_object_get(root, "unix_time");
-            if (json_is_number(unix_time_json))
-                exoplanet.unix_time = json_number_value(unix_time_json);
+            json_t *unixTime_json = json_object_get(root, "unixTime");
+            if (json_is_number(unixTime_json))
+                exoplanet.unixTime = json_number_value(unixTime_json);
 
             json_t *distance_json = json_object_get(root, "distance");
             if (json_is_number(distance_json))
@@ -165,9 +165,9 @@ int process_request(ssh_session session)
         // Convert system time to a double (in seconds)
         double current_time;
 
-        // Check if unix_time is provided and not null
-        if (exoplanet.unix_time > 0) {
-            current_time = exoplanet.unix_time;
+        // Check if unixTime is provided and not null
+        if (exoplanet.unixTime > 0) {
+            current_time = exoplanet.unixTime;
         } else {
             // Get the current system time
             time_t raw_time;
@@ -186,18 +186,18 @@ int process_request(ssh_session session)
 
         json_object_set_new(response, "name", json_string(exoplanet.name));
         json_object_set_new(response, "mass", json_real(exoplanet.mass));
-        json_object_set_new(response, "planet_radius", json_real(exoplanet.planet_radius));
-        json_object_set_new(response, "orbital_radius", json_real(exoplanet.orbital_radius));
-        json_object_set_new(response, "orbital_period", json_real(exoplanet.orbital_period));
+        json_object_set_new(response, "planetRadius", json_real(exoplanet.planetRadius));
+        json_object_set_new(response, "orbitalRadius", json_real(exoplanet.orbitalRadius));
+        json_object_set_new(response, "orbitalPeriod", json_real(exoplanet.orbitalPeriod));
         json_object_set_new(response, "eccentricity", json_real(exoplanet.eccentricity));
         json_object_set_new(response, "inclination", json_real(exoplanet.inclination));
-        json_object_set_new(response, "longitude_of_node", json_real(exoplanet.longitude_of_node));
-        json_object_set_new(response, "argument_of_periapsis", json_real(exoplanet.argument_of_periapsis));
+        json_object_set_new(response, "longitudeOfNode", json_real(exoplanet.longitudeOfNode));
+        json_object_set_new(response, "argumentOfPeriapsis", json_real(exoplanet.argumentOfPeriapsis));
         json_object_set_new(response, "galacticLongitude", json_real(exoplanet.galacticLongitude));
         json_object_set_new(response, "galacticLatitude", json_real(exoplanet.galacticLatitude));
         json_object_set_new(response, "declination", json_real(exoplanet.declination));
-        json_object_set_new(response, "stay_alive", json_real(exoplanet.stay_alive));
-        json_object_set_new(response, "unix_time", json_real(exoplanet.unix_time));
+        json_object_set_new(response, "stayAlive", json_real(exoplanet.stayAlive));
+        json_object_set_new(response, "unixTime", json_real(exoplanet.unixTime));
 
         if (isnan(exoplanet.distance) || isnan(exoplanet.ra)) {
             // Indicate there was an error in solving Kepler's equation

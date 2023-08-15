@@ -1,3 +1,5 @@
+// include model struct
+#include "exoplanet.c"
 // Define constants
 #define PI 3.14159265358979323846
 // position angle of the North Celestial Pole (in degrees) in Galactic coordinates
@@ -13,32 +15,11 @@
 double solveKeplersEquation(double M, double e);
 void equatorial_to_galactic(double ra, double dec, double *l, double *b);
 
-struct Exoplanet
-{
-    const char *name;
-    double mass;           // in Jupiters
-    double planet_radius;  // in Jupiter radii
-    double orbital_radius; // in AU
-    double orbital_period; // in years
-    double eccentricity;
-    double inclination;           // Orbital inclination in degrees
-    double longitude_of_node;     // Longitude of the ascending node in degrees
-    double argument_of_periapsis; // Argument of periapsis in degrees
-    double unix_time;             // Optional Unix time in seconds
-    double distance;              // Calculated distance result
-    double ra;                    // Calculated Right Ascension result
-    double declination;
-    double galacticLongitude;
-    double galacticLatitude;
-    int stay_alive;
-};
-
-
 // Function to calculate the Right Ascension (RA) of an exoplanet for an elliptical orbit
 void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
 {
     // Convert orbital period to seconds
-    double orbital_period_seconds = planet->orbital_period * 365.25 * 24 * 60 * 60;
+    double orbital_period_seconds = planet->orbitalPeriod * 365.25 * 24 * 60 * 60;
 
     // Calculate mean anomaly using Kepler's equation Function
     double mean_anomaly = 2 * PI * (current_time / orbital_period_seconds);
@@ -55,7 +36,7 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     }
 
     // Calculate distance from the focus (center of mass) to the exoplanet
-    double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
+    double distance = planet->orbitalRadius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
     // convert astronomical units to light years
     double distance_light_years = distance * 0.0000158125074;
@@ -72,8 +53,8 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
 
     // Convert orbital inclination, longitude of the ascending node, and argument of periapsis to radians
     double inclination_rad = planet->inclination * (PI / 180.0);
-    double node_rad = planet->longitude_of_node * (PI / 180.0);
-    double periapsis_rad = planet->argument_of_periapsis * (PI / 180.0);
+    double node_rad = planet->longitudeOfNode * (PI / 180.0);
+    double periapsis_rad = planet->argumentOfPeriapsis * (PI / 180.0);
 
     // Calculate the x, y, z coordinates in the equatorial plane
     double x_eq = x_orbital * (cos(node_rad) * cos(periapsis_rad) - sin(node_rad) * sin(periapsis_rad) * cos(inclination_rad)) - y_orbital * (sin(node_rad) * cos(periapsis_rad) + cos(node_rad) * sin(periapsis_rad) * cos(inclination_rad));
