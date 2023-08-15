@@ -315,6 +315,17 @@ int process_request(ssh_session session)
             exoplanet.declination = json_number_value(declination_json);
         // If it's not a number, the initialized value of 0.0 will remain
 
+       /// .galacticLongitude = 0.0,
+       json_t *galacticLongitude_json = json_object_get(root, "galacticLongitude");
+        if (json_is_number(galacticLongitude_json))
+            exoplanet.galacticLongitude = json_number_value(galacticLongitude_json);
+
+
+        json_t *galacticLatitude_json = json_object_get(root, "galacticLatitude");
+        if (json_is_number(galacticLatitude_json))
+            exoplanet.galacticLatitude = json_number_value(galacticLatitude_json);
+        
+
         json_t *ra_json = json_object_get(root, "ra");
         if (json_is_number(ra_json))
             exoplanet.ra = json_number_value(ra_json);
