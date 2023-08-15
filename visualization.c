@@ -55,7 +55,9 @@ double calculateScalingFactor(double maxDistance, double minDistance, double scr
 
 // Generates OBJ data for exoplanets and returns a pointer to the data
 // Memory management responsibility is with the caller
-char *generateObjData(struct Exoplanet *exoplanets, int numExoplanets, double screenWidth, double screenHeight, size_t *objSize) {
+// Generates OBJ data for exoplanets as dots and returns a pointer to the data
+// Memory management responsibility is with the caller
+char *generateObjDataDots(struct Exoplanet *exoplanets, int numExoplanets, double screenWidth, double screenHeight, size_t *objSize) {
     double maxDistance = 0.0;
     double minDistance = DBL_MAX;
 
@@ -80,17 +82,18 @@ char *generateObjData(struct Exoplanet *exoplanets, int numExoplanets, double sc
         return NULL;
     }
 
-    // Generate vertex data and format it as OBJ lines
+    // Generate vertex data and format it as OBJ points
     size_t offset = 0;
     for (int i = 0; i < numExoplanets; i++) {
         struct CartesianCoordinates cartesianCoord = convertToCartesian(exoplanets[i]);
         scaleCoordinates(&cartesianCoord, scalingFactor);
 
-        // Format the vertex line for OBJ format
-        offset += snprintf(objData + offset, bufferSize - offset, "v %.6f %.6f %.6f\n", cartesianCoord.x, cartesianCoord.y, cartesianCoord.z);
+        // Format the point line for OBJ format
+        offset += snprintf(objData + offset, bufferSize - offset, "p %.6f %.6f %.6f\n", cartesianCoord.x, cartesianCoord.y, cartesianCoord.z);
     }
 
     *objSize = offset;
 
     return objData;
 }
+
