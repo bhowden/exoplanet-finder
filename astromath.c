@@ -13,6 +13,8 @@
 double solveKeplersEquation(double M, double e);
 void equatorial_to_galactic(double ra, double dec, double *l, double *b);
 
+
+// plz add stay_alive to my struct
 struct Exoplanet
 {
     const char *name;
@@ -30,6 +32,7 @@ struct Exoplanet
     double declination;
     double galacticLongitude;
     double galacticLatitude;
+    int stay_alive;
 };
 
 
@@ -56,8 +59,10 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     // Calculate distance from the focus (center of mass) to the exoplanet
     double distance = planet->orbital_radius * (1 - planet->eccentricity * cos(eccentric_anomaly));
 
+    // convert astronomical units to light years
     double distance_light_years = distance * 0.0000158125074;
 
+    // set light years in exoplanet struct
     planet->distance = distance_light_years;
 
     // Calculate the true anomaly
@@ -91,7 +96,8 @@ void calculateRaAndDistance(struct Exoplanet *planet, double current_time)
     // Calculate declination (Dec) using the z coordinate
     double dec = asin(z_eq / sqrt(x_eq * x_eq + y_eq * y_eq + z_eq * z_eq));
 
-    planet->declination = RAD_TO_DEG(dec); // Convert declination from radians to degrees
+    // Convert declination from radians to degrees
+    planet->declination = RAD_TO_DEG(dec);
 }
 
 void setGalacticCoordinates(struct Exoplanet *planet)
@@ -129,6 +135,7 @@ double solveKeplersEquation(double M, double e)
         // Check for convergence: if the change in E is less than the defined tolerance, the method has converged
         if (fabs(E_new - E) < delta)
         {
+            // return calculated eccentric anomaly
             return E_new;
         }
 
